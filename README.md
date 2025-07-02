@@ -1,1 +1,1 @@
-# QA-Prod-Project
+# DiagnoGenie
