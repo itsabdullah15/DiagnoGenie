@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create New Account</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      height: 100vh;
+    }
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+    .form-title {
+      font-weight: 600;
+      font-size: 1.5rem;
+    }
+    .password-strength {
+      height: 5px;
+      margin-top: 5px;
+    }
+    .toggle-password {
+      cursor: pointer;
+      position: absolute;
+      right: 15px;
+      top: 38px;
+    }
+  </style>
+</head>
+<body class="bg-light d-flex justify-content-center align-items-center">
+
+  <div class="card p-4" style="width: 100%; max-width: 400px;">
+    <div class="text-center mb-4">
+      <h2 class="form-title">Create New Account</h2>
+      <p class="text-muted">Start your journey with us</p>
+    </div>
+
+    <form id="registerForm" novalidate>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input type="email" class="form-control" id="email" placeholder="you@example.com" required>
+        <div id="emailStatus" class="form-text text-danger"></div>
+      </div>
+
+      <div class="mb-3 position-relative">
+        <label for="password1" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password1" placeholder="Type your password" required>
+        <div class="password-strength bg-secondary rounded" id="strengthBar"></div>
+        <span class="toggle-password text-primary" onclick="togglePassword('password1')">👁️</span>
+      </div>
+
+      <div class="mb-3 position-relative">
+        <label for="password2" class="form-label">Confirm Password</label>
+        <input type="password" class="form-control" id="password2" placeholder="Type your password" required>
+        <span class="toggle-password text-primary" onclick="togglePassword('password2')">👁️</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Register</button>
+    </form>
+
+    <div id="message" class="mt-3"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById("registerForm");
+    const messageDiv = document.getElementById("message");
+    const emailInput = document.getElementById("email");
+    const emailStatus = document.getElementById("emailStatus");
+    const strengthBar = document.getElementById("strengthBar");
+
+    // Toggle Password Visibility
+    function togglePassword(fieldId) {
+      const field = document.getElementById(fieldId);
+      field.type = field.type === "password" ? "text" : "password";
+    }
+
+    // Password Strength Meter
+    document.getElementById("password1").addEventListener("input", function () {
+      const value = this.value;
+      let strength = 0;
+      if (value.length >= 8) strength += 1;
+      if (/[A-Z]/.test(value)) strength += 1;
+      if (/[0-9]/.test(value)) strength += 1;
+      if (/[^A-Za-z0-9]/.test(value)) strength += 1;
+
+      const colors = ["bg-danger", "bg-warning", "bg-info", "bg-success"];
+      strengthBar.className = `password-strength ${colors[strength - 1] || ""}`;
+      strengthBar.style.width = `${strength * 25}%`;
+    });
+
+    // Email Availability Check (simulate)
+    emailInput.addEventListener("blur", async () => {
+      const email = emailInput.value.trim();
+      emailStatus.innerText = "";
+      if (!email) return;
+
+      // Simulated delay and response
+      emailStatus.innerText = "Checking availability...";
+      await new Promise((res) => setTimeout(res, 800));
+
+      // Replace this logic with real API call
+      const unavailableEmails = ["test@example.com", "admin@example.com"];
+      if (unavailableEmails.includes(email.toLowerCase())) {
+        emailStatus.innerText = "This email is already registered.";
+      } else {
+        emailStatus.innerText = "";
+      }
+    });
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      messageDiv.innerHTML = "";
+
+      const email = emailInput.value.trim();
+      const password = document.getElementById("password1").value;
+      const password2 = document.getElementById("password2").value;
+
+      const errors = [];
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errors.push("Please enter a valid email address.");
+      }
+
+      if (emailStatus.innerText.includes("already registered")) {
+        errors.push("This email is already taken.");
+      }
+
+      if (password.length < 8) {
+        errors.push("Password must be at least 8 characters long.");
+      }
+
+      if (password !== password2) {
+        errors.push("Passwords do not match.");
+      }
+
+      if (errors.length > 0) {
+        messageDiv.innerHTML = `
+          <div class="alert alert-warning">
+            <ul class="mb-0">${errors.map(err => `<li>${err}</li>`).join('')}</ul>
+          </div>`;
+        return;
+      }
+
+      // Submit to backend
+      const response = await fetch("http://127.0.0.1:8000/api/auth/register/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, password2 })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        messageDiv.innerHTML = `<div class="alert alert-success">${data.detail}</div>`;
+        form.reset();
+        strengthBar.className = "password-strength bg-secondary";
+        strengthBar.style.width = "0";
+        emailStatus.innerText = "";
+      } else {
+        let errorHTML = "<ul class='mb-0'>";
+        for (const key in data) {
+          errorHTML += `<li><strong>${key}:</strong> ${data[key]}</li>`;
+        }
+        errorHTML += "</ul>";
+        messageDiv.innerHTML = `<div class="alert alert-danger">${errorHTML}</div>`;
+      }
+    });
+  </script>
+
+</body>
+</html>

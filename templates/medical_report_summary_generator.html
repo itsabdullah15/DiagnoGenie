@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical Report Summarizer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link 
+    rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  >
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <h2 class="mb-4">Medical Report Summarizer</h2>
+
+    <form id="uploadForm" class="mb-4" novalidate>
+      <div class="mb-3">
+        <label for="fileInput" class="form-label">Select one or more PDF files</label>
+        <input type="file" id="fileInput" name="files" multiple accept=".pdf" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <span id="submitText">Upload and Summarize</span>
+        <span id="loadingSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+      </button>
+    </form>
+
+    <div id="alertContainer"></div>
+
+    <h4 class="mt-5">Summaries</h4>
+    <div id="resultContainer" class="mt-3"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const fileInput = document.getElementById("fileInput");
+    const resultContainer = document.getElementById("resultContainer");
+    const alertContainer = document.getElementById("alertContainer");
+    const submitText = document.getElementById("submitText");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const files = fileInput.files;
+      if (!files.length) {
+        showAlert("Please select at least one PDF file.", "warning");
+        return;
+      }
+
+      // UI feedback: show spinner
+      setLoading(true);
+      resultContainer.innerHTML = "";
+      alertContainer.innerHTML = "";
+
+      const formData = new FormData();
+      for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/reports/summarize-report/", {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+        setLoading(false);
+
+        if (!response.ok) {
+          showAlert(result.detail || "An error occurred while summarizing.", "danger");
+          return;
+        }
+
+        if (result.length === 0) {
+          showAlert("No summary data returned.", "info");
+          return;
+        }
+        console.log("API response:", result);
+
+        renderSummaries(result);
+      } catch (error) {
+        setLoading(false);
+        showAlert("An unexpected error occurred: " + error.message, "danger");
+      }
+    });
+
+    function setLoading(isLoading) {
+      submitText.classList.toggle("d-none", isLoading);
+      loadingSpinner.classList.toggle("d-none", !isLoading);
+    }
+
+    function showAlert(message, type = "info") {
+      alertContainer.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+    }
+
+
+    function renderSummaries(summaries) {
+  resultContainer.innerHTML = "";
+
+  summaries.forEach(item => {
+    const { filename, summary } = item;
+
+    const card = document.createElement("div");
+    card.className = "card mb-3 shadow-sm";
+    card.innerHTML = `
+      <div class="card-header fw-semibold bg-primary text-white">${filename}</div>
+      <div class="card-body">
+        <h6>🩺 Overall Condition:</h6>
+        <p>${summary.overall_condition}</p>
+
+        <h6>🧪 Test Results:</h6>
+        <p>${summary.test_results}</p>
+
+        <h6>🧠 Diagnosis:</h6>
+        <p>${summary.diagnosis}</p>
+
+        <h6>📋 Follow-Up:</h6>
+        <p>${summary.follow_up}</p>
+      </div>
+    `;
+    resultContainer.appendChild(card);
+  });
+}
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

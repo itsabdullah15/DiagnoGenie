@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DiagnoGenie RAG Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            width: 240px;
+            background-color: #1e1e2f;
+            color: #fff;
+            padding-top: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .sidebar a {
+            color: #adb5bd;
+            text-decoration: none;
+            display: block;
+            padding: 10px 20px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 20px;
+        }
+
+        .navbar {
+            margin-left: 240px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .rag-header {
+            font-weight: 600;
+            font-size: 1.4rem;
+            color: #1e1e2f;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -240px;
+                position: absolute;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .main-content,
+            .navbar {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+        <div class="text-center mb-4">
+            <h4>DiagnoGenie RAG</h4>
+        </div>
+        <a href="#" class="active">📊 Dashboard</a>
+        <a href="#">💬 Chat Interface</a>
+        <a href="#">📂 Documents</a>
+        <a href="#">📚 Knowledge Base</a>
+        <a href="#">⚙️ Settings</a>
+    </nav>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-light px-4">
+        <div class="container-fluid justify-content-between">
+            <button class="btn btn-outline-dark d-md-none" onclick="toggleSidebar()">☰</button>
+            <div>
+                <span id="welcome-msg" class="me-3 text-muted">Welcome</span>
+                <button onclick="logout()" class="btn btn-outline-secondary btn-sm">Logout</button>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="card p-4">
+                    <h5 class="rag-header">Summarize Medical Report</h5>
+                    <p class="text-muted">Upload any medical document and get a summary.</p>
+                    <a href="http://127.0.0.1:8000/api/reports/medical_report_summary/" class="btn btn-primary btn-sm">Let's
+                        Summarize</a>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card p-4">
+                    <h5 class="rag-header">Prescription Extractor</h5>
+                    <p class="text-muted">Understand your prescription better — get detailed info on each medicine</p>
+                    <a href="#" class="btn btn-success btn-sm">Let's Summarize</a>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card p-4">
+                    <h5 class="rag-header">Knowledge Base</h5>
+                    <p class="text-muted">Manage and review vectorized content.</p>
+                    <a href="#" class="btn btn-info btn-sm">Explore</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+    </script>
+
+    <script>
+    const token = localStorage.getItem('access_token');
+
+    if (!token) {
+        window.location.href = 'http://127.0.0.1:8000/api/auth/login-page/';
+    } else {
+        fetch('http://127.0.0.1:8000/api/auth/current-user/', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                // If token is invalid or expired
+                throw new Error("Unauthorized");
+            }
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById('welcome-msg').textContent = 'Welcome, ' + data.email;
+        })
+        .catch(err => {
+            console.error("Failed to fetch user:", err);
+            // Token might be invalid/expired; redirect to login
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = 'http://127.0.0.1:8000/api/auth/login-page/';
+        });
+    }
+
+    function logout() {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = 'http://127.0.0.1:8000/api/auth/login-page/';
+    }
+</script>
+
+
+
+</body>
+
+</html>

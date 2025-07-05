@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - RAG Bot</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .login-box {
+      max-width: 400px;
+      margin: 80px auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    }
+    .form-title {
+      font-weight: 600;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    .form-subtext {
+      font-size: 0.9rem;
+      color: #6c757d;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <h2 class="form-title">Login</h2>
+    <p class="form-subtext">Access your medical RAG dashboard</p>
+
+    <div id="alert-placeholder"></div>
+
+    <form id="login-form">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          placeholder="Enter email"
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="password"
+          placeholder="Enter password"
+          required
+        />
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+
+    <!-- Create Account -->
+    <div class="text-center mt-3">
+      <span class="text-muted">Don't have an account?</span><br />
+      <a href="http://127.0.0.1:8000/api/auth/register-page/" class="btn btn-outline-secondary btn-sm mt-2 w-100">Create New Account</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Redirect if already logged in
+    if (localStorage.getItem('access_token')) {
+      window.location.href = 'http://127.0.0.1:8000/api/auth';  // adjust path as needed
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const alertPlaceholder = document.getElementById('alert-placeholder');
+      alertPlaceholder.innerHTML = '';
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Login failed');
+        }
+
+        const data = await response.json();
+
+        // Store tokens
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+
+        // Show success message
+        alertPlaceholder.innerHTML = `
+          <div class="alert alert-success" role="alert">
+            Login successful! Redirecting...
+          </div>
+        `;
+
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = 'http://127.0.0.1:8000/api/auth';
+        }, 1500);
+
+      } catch (error) {
+        alertPlaceholder.innerHTML = `
+          <div class="alert alert-danger" role="alert">
+            ${error.message}
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
