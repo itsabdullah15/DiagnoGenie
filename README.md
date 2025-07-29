@@ -76,23 +76,28 @@ The project is organized into the following main directories and files:
 
 DiagnoGenie/
 ├── accounts/                     # Manages user authentication and profiles
-│   └── ...
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   └── views.py
 ├── prescription_summarizer/      # Handles the summarization of prescription texts
-│   ├── init.py
+│   ├── __init__.py
 │   ├── admin.py
 │   ├── apps.py
 │   ├── models.py
 │   ├── tests.py
 │   └── views.py
 ├── report_summarizer/            # Handles the summarization of medical reports
-│   ├── init.py
+│   ├── __init__.py
 │   ├── admin.py
 │   ├── apps.py
 │   ├── models.py
 │   ├── tests.py
 │   └── views.py
 ├── templates/                    # Contains HTML templates for the web interface
-│   └── ...
+│   └── ...                       # (e.g., HTML files for different pages)
 ├── utils/                        # Utility functions and helpers
 │   ├── summarize.py
 │   └── extract_pdf.py
