@@ -58,8 +58,6 @@ To set up DiagnoGenie locally, follow these steps:
     python manage.py runserver
     ```
 
-*(Note: Specific dependencies and detailed setup instructions might be required based on the project's exact requirements, e.g., API keys for LLMs.)*
-
 ## Usage
 
 Once the application is running, you can:
@@ -74,6 +72,7 @@ Once the application is running, you can:
 
 The project is organized into the following main directories and files:
 
+```
 DiagnoGenie/
 ├── accounts/                     # Manages user authentication and profiles
 │   ├── __init__.py
@@ -105,3 +104,4 @@ DiagnoGenie/
 ├── LICENSE                       # Project licensing information
 ├── README.md                     # This README file
 └── manage.py                     # Django's command-line utility for administrative tasks
+```
