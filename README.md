@@ -73,3 +73,30 @@ Once the application is running, you can:
 ## Project Structure
 
 The project is organized into the following main directories and files:
+
+DiagnoGenie/
+├── accounts/                     # Manages user authentication and profiles
+│   └── ...
+├── prescription_summarizer/      # Handles the summarization of prescription texts
+│   ├── init.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   └── views.py
+├── report_summarizer/            # Handles the summarization of medical reports
+│   ├── init.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   └── views.py
+├── templates/                    # Contains HTML templates for the web interface
+│   └── ...
+├── utils/                        # Utility functions and helpers
+│   ├── summarize.py
+│   └── extract_pdf.py
+├── .gitignore                    # Specifies intentionally untracked files to ignore
+├── LICENSE                       # Project licensing information
+├── README.md                     # This README file
+└── manage.py                     # Django's command-line utility for administrative tasks
